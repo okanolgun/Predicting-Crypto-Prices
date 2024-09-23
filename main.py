@@ -5,6 +5,7 @@ import pandas_datareader as web
 import mplfinance
 import datetime as dt
 
+from jax.experimental.jax2tf.examples.mnist_lib import input_shape
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.layers import Dense, Dropout, LSTM
 from tensorflow.keras.models import Sequential
@@ -41,3 +42,21 @@ for x in range(prediction_days, len(scaled_data)):
 
 x_train, y_train = np.array(x_train), np.array(y_train)
 x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+
+
+# creating a neural network for prediction
+# we'll use LSTM model, because btc price is a
+# sequential price and lstm is works well
+# with the time sequential features
+
+model = Sequential()
+model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+model.add(Dropout(0.2))
+model.add(LSTM(units=50, return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(units=50))
+model.add(Dropout(0.2))
+model.Dense(units=1)
+
+model.compile(optimizer='adam', loss='mean_squared_error')
+model.fit(x_train, y_train, epochs=25, batch_size=32)
